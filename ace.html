@@ -1,0 +1,274 @@
+// snapshot //
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<title>New File</title>
+<link rel="stylesheet" type="text/css" href="codebase/dhtmlx.css"/>
+<script src="codebase/dhtmlx.js"></script>
+<style type="text/css" media="screen">
+
+#thiseditor {
+   position: absolute;
+   top: 30px;
+   right: 0px;
+   bottom: 30px;
+   left: 0px;
+
+   border:1px inset #C0C0FF;
+}
+
+BODY {
+   margin:0;
+   padding:0;
+}
+</style>
+<script>
+var
+   constMPC="Program unnamed;\r\n\r\n//////////////////////////////////////////////////////////////////////////////\r\n//    Author: \r\n// Copyright: \r\n//   Created: @@@CREATED_ON@@@\r\n//////////////////////////////////////////////////////////////////////////////\r\n\r\n\r\nBegin\r\n   \r\nend.";
+   constJS="//////////////////////////////////////////////////////////////////////////////\r\n//    Author: \r\n// Copyright: \r\n//   Created: @@@CREATED_ON@@@\r\n//////////////////////////////////////////////////////////////////////////////\r\n";
+   constHTML="&lt;!DOCTYPE html&gt;\r\n&lt;html&gt;&lt;head&gt;\r\n&lt;title&gt; &lt;/title&gt;\r\n&lt;link rel='stylesheet' type='text/css' href='style.css'&gt;\r\n&lt;meta name='keywords' content=''&gt;\r\n&lt;meta name='description' content=''&gt;\r\n&lt;meta name='created' content='@@@CREATED_ON@@@'&gt;\r\n&lt;script src='app.js'&gt;&lt;/script&gt;\r\n&lt;/head&gt;\r\n&lt;body&gt;\r\n\r\n&lt;/body&gt;\r\n&lt;/html&gt;";
+
+var myToolbar;
+var unchanged;
+function doOnLoad() {
+	myToolbar = new dhtmlXToolbarObject({parent: "toolbarObj",icons_path: "images/"});
+	var newOpts = Array(
+		Array('MPC' , 'obj', 'Modern Pascal', 'text_document.gif'),
+		Array('JS'  ,'obj', 'JavaScript'   , 'stylesheet.gif'),
+		Array('HTML','obj', 'HTML Document', 'stylesheet.gif'),
+		Array('CSS' ,'obj', 'CSS Document' , 'stylesheet.gif'),
+		Array('TEXT',   'obj', 'Text Document', 'text_document.gif'),
+		Array('XML' ,   'obj', 'XML Document' , 'presentation.gif'),
+		Array('new_s1',   'sep'),
+		Array('INI' ,'obj', 'INI Config'   , 'other.gif'),
+		Array('JSON','obj', 'JSON Object'  , 'other.gif'),
+		Array('SQL' ,'obj', 'SQL Statement', 'other.gif'));
+	myToolbar.addButtonSelect("syntax", 0, "Syntax", newOpts, "", "");
+	myToolbar.addSeparator("sep1", 1);
+	myToolbar.addButton("save", 2, "", "Save24.png", "Save24.png");
+	myToolbar.addButton("save_as", 3, "Save As...", "SaveAs24.png", "save_as_dis.gif");
+//	myToolbar.disableItem("save_as");
+	myToolbar.addSeparator("sep2", 4);
+	myToolbar.addButton("undo", 5, "", "Undo24.png", "undo_dis.gif");
+	myToolbar.addButton("redo", 6, "", "Redo24.png", "redo_dis.gif");
+	myToolbar.addSeparator("sep3", 7);
+	myToolbar.addButton("cut", 8, "", "Cut24.png", "cut_dis.gif");
+	myToolbar.addButton("copy", 9, "", "Copy24.png", "copy_dis.gif");
+	myToolbar.addButton("paste", 10, "", "Paste24.png", "paste_dis.gif");
+	myToolbar.addButton("find", 11, "Find", "Find24.png", "paste_dis.gif");
+	myToolbar.addButton("goto", 12, "Goto", "Goto24.png", "paste_dis.gif");
+	myToolbar.addSeparator("sep4", 13);
+	myToolbar.addButton("compile", 14, "Compile", "Compile48.png", "paste_dis.gif");
+	myToolbar.addSeparator("sep4", 15);
+	var printOpts = Array(
+		Array('Cobalt'         ,  'obj', 'Default'    , 'D24.png'),
+		Array('Crimson Editor' ,  'obj', 'Business'   , 'B24.png'), // Crimson Editor
+		Array('Eclipse'        ,  'obj', 'Eclipse'    , 'E24.png'),
+		Array('Solarized Light',  'obj', 'Solarized'  , 'S24.png'),
+		Array('XCode'          ,  'obj', 'XCode'      , 'X24.png'),
+		Array('print_sep1', 'sep'),
+		Array('Chaos'          ,  'obj', 'Chaos'      , 'C24.png'),
+		Array('krTheme'        ,  'obj', 'Kewl'       , 'K24.png'), // KrTheme
+		Array('Pastel on dark' ,  'obj', 'Pastel'     , 'P24.png'),
+		Array('Solarized Dark' ,  'obj', 'Teal'       , 'T24.png'),
+		Array('Vibrant Ink'    ,  'obj', 'Vibrant'    , 'V24.png'));
+	myToolbar.addButtonSelect("theme", 16, "Theme", printOpts, "", "");
+
+	myToolbar.attachEvent("onClick", function(id) {
+		switch (id) {
+// Commands
+			case "save":if (document.title=="New File") {
+				var options = {  
+					multiple: false,
+					title: "Save As...",
+					types: ['p'],
+					typesDescription: ["Source Code","HTML","All Files"],
+					path: Ti.Filesystem.getUserDirectory()
+				};
+				callbackFunc=function(filenames) {
+					fileSelected = filenames[0];
+// asked to overwrite if exists!
+					var Stream=Ti.Filesystem.getFileStream(fileSelected);
+					Stream.open(Ti.Filesystem.MODE_WRITE);
+					Stream.write(editor.getSession().doc.getValue());
+					Stream.close();
+					editor.getSession().getUndoManager().markClean();
+					editor.focus();
+					document.title=fileSelected;
+					uw = Ti.UI.getCurrentWindow();
+					uw.setCloseable(true);
+					uw.setFocus();
+				}
+				uw = Ti.UI.getCurrentWindow();
+				uw.openSaveAsDialog(callbackFunc, options);
+        		} else {
+				var Stream=Ti.Filesystem.getFileStream(document.title);
+				Stream.open(Ti.Filesystem.MODE_WRITE);
+				Stream.write(editor.getSession().doc.getValue());
+				Stream.close();
+				editor.getSession().getUndoManager().markClean();
+				uw = Ti.UI.getCurrentWindow();
+				uw.setCloseable(true);
+				uw.setFocus();
+				editor.focus();
+			}
+			break;
+			case "save_as":
+				var options = {  
+					multiple: false,
+					title: "Save As...",
+					types: ['p'],
+					typesDescription: ["Source Code","HTML","All Files"],
+					path: Ti.Filesystem.getUserDirectory()
+				};
+				callbackFunc=function(filenames) {
+					fileSelected=filenames[0];
+// asked to overwrite if exists!
+					var Stream=Ti.Filesystem.getFileStream(fileSelected);
+					Stream.open(Ti.Filesystem.MODE_WRITE);
+					Stream.write(editor.getSession().doc.getValue());
+					Stream.close();
+					editor.getSession().getUndoManager().markClean();
+					editor.focus();
+					document.title=fileSelected;
+					uw = Ti.UI.getCurrentWindow();
+					uw.setCloseable(true);
+					uw.setFocus();
+				}
+				uw = Ti.UI.getCurrentWindow();
+				uw.openSaveAsDialog(callbackFunc, options);
+			break;
+			case "undo":editor.undo(); break;
+			case "redo":editor.redo(); break;
+			case "cut":Ti.UI.Clipboard.setText(editor.session.getTextRange(editor.getSelectionRange())); editor.insert(""); break;
+			case "copy":Ti.UI.Clipboard.setText(editor.session.getTextRange(editor.getSelectionRange())); break;
+			case "paste":editor.insert(Ti.UI.Clipboard.getText()); break;
+// SYNTAX
+			case "MPC":editor.getSession().setMode("ace/mode/pascal");
+			if (unchanged == editor.getSession().doc.getValue()) {
+				editor.getSession().doc.setValue(constMPC.replace("@@@CREATED_ON@@@",new Date()));
+				unchanged = editor.getSession().doc.getValue();
+				editor.gotoLine(11);
+				editor.clearSelection();
+				editor.focus();
+			}
+			break;
+			case "JS":editor.getSession().setMode("ace/mode/javascript");
+			if (unchanged == editor.getSession().doc.getValue()) {
+				editor.getSession().doc.setValue(constJS.replace("@@@CREATED_ON@@@",new Date()));
+				unchanged = editor.getSession().doc.getValue();
+				editor.gotoLine(6);
+				editor.clearSelection();
+				editor.focus();
+			}
+			break;
+			case "HTML":editor.getSession().setMode("ace/mode/html");
+			if (unchanged == editor.getSession().doc.getValue()) {
+				editor.getSession().doc.setValue(constHTML.replace("@@@CREATED_ON@@@",new Date()).replace(/&lt;/g,"<").replace(/&gt;/g,">"));
+				unchanged = editor.getSession().doc.getValue();
+				editor.gotoLine(11);
+				editor.clearSelection();
+				editor.focus();
+			}
+			break;
+			case "CSS":editor.getSession().setMode("ace/mode/css"); break;
+			case "TEXT":editor.getSession().setMode("ace/mode/text"); break;
+			case "XML":editor.getSession().setMode("ace/mode/xml"); break;
+			case "INI":editor.getSession().setMode("ace/mode/ini"); break;
+			case "JSON":editor.getSession().setMode("ace/mode/json"); break;
+			case "SQL":editor.getSession().setMode("ace/mode/sql"); break;
+// THEME
+			case "Cobalt":editor.setTheme("ace/theme/cobalt"); break;
+
+			case "Crimson Editor":editor.setTheme("ace/theme/crimson_editor"); break;
+
+			case "Eclipse":editor.setTheme("ace/theme/eclipse"); break;
+
+			case "Solarized Light":editor.setTheme("ace/theme/solarized_light"); break;
+
+			case "XCode":editor.setTheme("ace/theme/xcode"); break;
+			case "Chaos":editor.setTheme("ace/theme/chaos"); break;
+			case "krTheme":editor.setTheme("ace/theme/kr_theme"); break;
+			case "Pastel on dark":editor.setTheme("ace/theme/pastel_on_dark"); break;
+			case "Solarized Dark":editor.setTheme("ace/theme/solarized_dark"); break;
+			case "Vibrant Ink":editor.setTheme("ace/theme/vibrant_ink"); break;
+			default:alert(id); break;
+		}
+		editor.setReadOnly(false);
+		editor.getSession().setTabSize(3);
+		editor.getSession().setUseSoftTabs(true);
+	});
+	if (String(document.location).indexOf("?")>-1) {
+		fileSelected=String(document.location).substr(String(document.location).indexOf("?")+1, String(document.location).length);
+		document.title=Ti.Codec.decodeBase64(fileSelected);
+//alert(Ti.Codec.decodeBase64(fileSelected));
+		var Stream=Ti.Filesystem.getFileStream(Ti.Codec.decodeBase64(fileSelected));
+		Stream.open(Ti.Filesystem.MODE_READ);
+		contents=Stream.read();
+try {
+		editor.getSession().doc.setValue(String(contents));
+} catch(err) { alert("Error Loading File:\r\n"+err); }
+		Stream.close();
+		editor.gotoLine(1);
+		editor.getSession().setScrollTop(0);
+		editor.focus();
+        } else {
+		editor.getSession().doc.setValue(constMPC.replace("@@@CREATED_ON@@@",new Date()));
+		unchanged=editor.getSession().doc.getValue();
+		editor.gotoLine(11);
+		editor.focus();
+	}
+	editor.getSession().getUndoManager().markClean();
+}
+
+function doOnUnload() {
+	if (!editor.getSession().getUndoManager().isClean()) {
+		if (document.title=="New File") {
+			alert("Sorry, any changes where lost!");
+        	} else {
+			uw = Ti.UI.getCurrentWindow();
+			uw.openSaveAsDialog(callbackFunc, options);
+			var Stream=Ti.Filesystem.getFileStream(document.title);
+			Stream.open(Ti.Filesystem.MODE_WRITE);
+			Stream.write(editor.getSession().doc.getValue());
+			Stream.close();
+		}
+	}
+}
+</script>
+</head>
+<body onload="doOnLoad();" onunload="doOnUnload()">
+<div style="height:30px;"><div id="toolbarObj"></div></div>
+<div id="thiseditor">/*
+ * Loading
+ */</div>
+
+<div style="position:absolute;bottom:0px;left:0px;right:0px;height:24px;background:#E9F0FF;border:1px inset #C0C0FF;padding-left:8px;padding-top:4px;color:#6980AF;font-family:sans-serif;font-size:10pt;" id="statusbar">Loading...</div>
+<script src="ace/ace.js" type="text/javascript" charset="utf-8"></script>
+
+<script>
+	var editor = ace.edit("thiseditor");
+
+	editor.setTheme("ace/theme/cobalt");
+
+	editor.getSession().setMode("ace/mode/pascal");
+	editor.getSession().setTabSize(3);
+	editor.getSession().setUseSoftTabs(true);
+
+	editor.getSession().on("change",function(e) {
+		if (!editor.getSession().getUndoManager().isClean()) {
+			if (Ti.UI.getCurrentWindow().isCloseable()) {
+				uw = Ti.UI.getCurrentWindow();
+				uw.setCloseable(false);
+				uw.setFocus();
+				editor.focus();
+			}
+		}
+	});
+</script>
+</body>
+
+</html>
